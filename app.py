@@ -2,7 +2,6 @@ import streamlit as st
 import google.generativeai as genai
 
 # --- 1. KONFIGURASI KEAMANAN & API ---
-# Silakan ganti password dan API Key di bawah ini
 PASSWORD_RAHASIA = "whale123" 
 GEMINI_API_KEY = "AIzaSyB7lgc7AA7tJcjoyl3nVBi8VpZyowtx9M8"
 
@@ -18,7 +17,6 @@ def check_password():
     if st.session_state["password_correct"]:
         return True
 
-    st.set_page_config(page_title="Login - Wealth Advisor", page_icon="🔒")
     st.title("🔒 Private Access")
     st.write("Aplikasi ini khusus untuk pengelolaan aset pribadi Rp195 Miliar.")
     
@@ -28,56 +26,30 @@ def check_password():
             st.session_state["password_correct"] = True
             st.rerun()
         else:
-            st.error("❌ Password salah. Akses ditolak.")
+            st.error("❌ Password salah.")
     return False
 
-# --- 3. TAMPILAN UTAMA (Jika Login Berhasil) ---
+# --- 3. TAMPILAN UTAMA ---
 if check_password():
-    st.set_page_config(page_title="Wealth Advisor AI", page_icon="💼")
-    st.title("💼 Wealth Advisor AI - Private Dashboard")
+    st.title("💼 Wealth Advisor AI - Dashboard")
     
-    # Bagian Dashboard Angka
-    st.subheader("Simulasi Pertumbuhan Aset")
-    col1, col2 = st.columns(2)
+    # Dashboard Angka
+    aset_awal = 195000000000 
+    bunga = st.slider("Asumsi Return Tahunan (%)", 0.0, 20.0, 5.0)
+    total = aset_awal * (1 + (bunga / 100))
     
-    aset_awal = 195000000000 # Rp195 Miliar
-    
-    with col1:
-        bunga_tahunan = st.slider("Asumsi Return/Dividen Tahunan (%)", 0.0, 20.0, 5.0)
-    
-    hasil_setahun = aset_awal * (1 + (bunga_tahunan / 100))
-    profit = hasil_setahun - aset_awal
-    
-    with col2:
-        st.metric(label="Estimasi Nilai Aset", value=f"Rp {hasil_setahun:,.0f}")
-        st.caption(f"Potensi Keuntungan Bersih: Rp {profit:,.0f}")
+    st.metric(label="Estimasi Nilai Aset", value=f"Rp {total:,.0f}")
 
     st.divider()
 
-    # Bagian Chatbot Pintar
+    # Chatbot Pintar (BAGIAN INI YANG BIKIN PINTAR)
     st.subheader("💬 Konsultasi Strategi Investasi")
-    st.write("Tanyakan apa saja kepada AI mengenai pengelolaan aset Anda.")
-    
-    user_input = st.text_input("Contoh: Berikan rekomendasi alokasi aset untuk dana Rp195 M agar aman dari inflasi.")
+    user_input = st.text_input("Tanya AI tentang aset Rp195M kamu:")
 
     if user_input:
-        with st.spinner("Sedang berpikir..."):
-            try:
-                # Instruksi khusus agar AI sadar dia menangani dana besar
-                prompt_lengkap = f"""
-                Kamu adalah Penasihat Keuangan Senior (Private Banker) kelas dunia. 
-                Klienmu memiliki aset tunai sebesar Rp195 Miliar. 
-                Berikan jawaban yang sangat profesional, mendetail, dan berfokus pada pelestarian kekayaan (wealth preservation).
-                Pertanyaan Klien: {user_input}
-                """
-                
-                response = model.generate_content(prompt_lengkap)
-                st.markdown("### 🤖 Rekomendasi Asisten AI:")
-                st.info(response.text)
-                
-            except Exception as e:
-                st.error(f"Terjadi kesalahan teknis: {e}. Pastikan API Key Gemini sudah aktif.")
-
-    # Footer
-    st.divider()
-    st.caption("Eksklusif dibuat untuk Pengelolaan Aset Pribadi. Powered by Gemini AI.")
+        with st.spinner("Sedang menganalisis..."):
+            # Prompt ini memerintahkan Gemini untuk menjawab dengan cerdas
+            prompt = f"Anda adalah penasihat keuangan VVIP. Klien memiliki Rp195 Miliar. Jawab dengan sangat detail: {user_input}"
+            response = model.generate_content(prompt)
+            st.markdown("### 🤖 Rekomendasi Asisten AI:")
+            st.info(response.text) # Ini akan menampilkan jawaban asli dari Gemini
