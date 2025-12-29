@@ -7,7 +7,7 @@ GEMINI_API_KEY = "AIzaSyB7lgc7AA7tJcjoyl3nVBi8VpZyowtx9M8"
 
 # Inisialisasi Otak Gemini
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 # --- 2. FUNGSI LOGIN ---
 def check_password():
