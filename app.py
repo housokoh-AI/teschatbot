@@ -1,46 +1,83 @@
 import streamlit as st
+import google.generativeai as genai
 
-# --- KONFIGURASI KEAMANAN ---
-PASSWORD_RAHASIA = "whale123"  # <--- Ganti dengan password pilihanmu sendiri!
+# --- 1. KONFIGURASI KEAMANAN & API ---
+# Silakan ganti password dan API Key di bawah ini
+PASSWORD_RAHASIA = "whale123" 
+GEMINI_API_KEY = "AIzaSyB7lgc7AA7tJcjoyl3nVBi8VpZyowtx9M8"
 
+# Inisialisasi Otak Gemini
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+# --- 2. FUNGSI LOGIN ---
 def check_password():
-    """Mengembalikan True jika password yang dimasukkan benar."""
     if "password_correct" not in st.session_state:
         st.session_state["password_correct"] = False
-
+    
     if st.session_state["password_correct"]:
         return True
 
-    # Tampilan Form Login
-    st.title("🔒 Akses Terbatas")
-    pwd = st.text_input("Masukkan Password Asisten Keuangan:", type="password")
+    st.set_page_config(page_title="Login - Wealth Advisor", page_icon="🔒")
+    st.title("🔒 Private Access")
+    st.write("Aplikasi ini khusus untuk pengelolaan aset pribadi Rp195 Miliar.")
     
-    if st.button("Masuk"):
+    pwd = st.text_input("Masukkan Password Rahasia:", type="password")
+    if st.button("Masuk Sekarang"):
         if pwd == PASSWORD_RAHASIA:
             st.session_state["password_correct"] = True
             st.rerun()
         else:
-            st.error("❌ Password Salah!")
+            st.error("❌ Password salah. Akses ditolak.")
     return False
 
-# --- JALANKAN KEAMANAN ---
+# --- 3. TAMPILAN UTAMA (Jika Login Berhasil) ---
 if check_password():
-    # --- SEMUA KODE LAMA KAMU PINDAHKAN KE SINI ---
-    st.title("💼 Wealth Advisor AI - Dashboard")
+    st.set_page_config(page_title="Wealth Advisor AI", page_icon="💼")
+    st.title("💼 Wealth Advisor AI - Private Dashboard")
     
+    # Bagian Dashboard Angka
     st.subheader("Simulasi Pertumbuhan Aset")
-    aset_awal = 195000000000
-    bunga_tahunan = st.slider("Asumsi Bunga/Dividen Tahunan (%)", 0.0, 20.0, 5.0)
-
+    col1, col2 = st.columns(2)
+    
+    aset_awal = 195000000000 # Rp195 Miliar
+    
+    with col1:
+        bunga_tahunan = st.slider("Asumsi Return/Dividen Tahunan (%)", 0.0, 20.0, 5.0)
+    
     hasil_setahun = aset_awal * (1 + (bunga_tahunan / 100))
     profit = hasil_setahun - aset_awal
-
-    st.metric(label="Total Aset Tahun Depan", value=f"Rp {hasil_setahun:,.0f}")
-    st.write(f"Potensi keuntungan bersih Anda: **Rp {profit:,.0f}**")
+    
+    with col2:
+        st.metric(label="Estimasi Nilai Aset", value=f"Rp {hasil_setahun:,.0f}")
+        st.caption(f"Potensi Keuntungan Bersih: Rp {profit:,.0f}")
 
     st.divider()
-    st.subheader("Tanya Asisten AI")
-    pertanyaan = st.text_input("Contoh: Apakah aman beli saham IPO sekarang?")
 
-    if pertanyaan:
-        st.write(f"🤖 **Analisis AI:** Mengingat aset Anda Rp195M, pertanyaan tentang '{pertanyaan}' sangat krusial. Saya menyarankan tetap waspada pada volatilitas pasar.")
+    # Bagian Chatbot Pintar
+    st.subheader("💬 Konsultasi Strategi Investasi")
+    st.write("Tanyakan apa saja kepada AI mengenai pengelolaan aset Anda.")
+    
+    user_input = st.text_input("Contoh: Berikan rekomendasi alokasi aset untuk dana Rp195 M agar aman dari inflasi.")
+
+    if user_input:
+        with st.spinner("Sedang berpikir..."):
+            try:
+                # Instruksi khusus agar AI sadar dia menangani dana besar
+                prompt_lengkap = f"""
+                Kamu adalah Penasihat Keuangan Senior (Private Banker) kelas dunia. 
+                Klienmu memiliki aset tunai sebesar Rp195 Miliar. 
+                Berikan jawaban yang sangat profesional, mendetail, dan berfokus pada pelestarian kekayaan (wealth preservation).
+                Pertanyaan Klien: {user_input}
+                """
+                
+                response = model.generate_content(prompt_lengkap)
+                st.markdown("### 🤖 Rekomendasi Asisten AI:")
+                st.info(response.text)
+                
+            except Exception as e:
+                st.error(f"Terjadi kesalahan teknis: {e}. Pastikan API Key Gemini sudah aktif.")
+
+    # Footer
+    st.divider()
+    st.caption("Eksklusif dibuat untuk Pengelolaan Aset Pribadi. Powered by Gemini AI.")
